@@ -19,9 +19,11 @@ jobs:
         with:
           node-version: 20
       - name: Install sender dependencies
-        run: npm install --no-save firebase-admin web-push luxon
-      - name: Send due reminders
+        run: npm install --no-save firebase-admin luxon
+      - name: Send due reminders by email
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-        run: node scripts/send-reminders.mjs
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
+          BREVO_SENDER_NAME: ${{ secrets.BREVO_SENDER_NAME }}
+        run: node scripts/send-email-reminders.mjs
