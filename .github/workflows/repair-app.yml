@@ -1,0 +1,41 @@
+name: Repair Control Soporte app.js
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Repair dashboard syntax error
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('app.js')
+          s = p.read_text(encoding='utf-8')
+          bad = "Faltan ${Math.max(0,Math.ceil((new Date(new Date().getFullYear(),new Date().getMonth(),Number(period.next.slice(0,2)))-new Date())/86400000)} días"
+          good = "Faltan ${Math.max(0,Math.ceil((new Date(new Date().getFullYear(),new Date().getMonth(),Number(period.next.slice(0,2)))-new Date())/86400000))} días"
+          if bad not in s:
+              print('No repair needed')
+              raise SystemExit(0)
+          p.write_text(s.replace(bad, good), encoding='utf-8')
+      - name: Commit repaired app.js
+        shell: bash
+        run: |
+          if git diff --quiet -- app.js; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app.js
+          git commit -m 'Fix dashboard JavaScript syntax error'
+          git push
