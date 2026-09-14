@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 const serviceAccount=JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 admin.initializeApp({credential:admin.credential.cert(serviceAccount)});
 const db=admin.firestore();
-const publicKey='BD-JjPNa97-sK55_fLcUnRs4g36LBa9f414fxv2FCjmK2FDHHqlcavKC4BqFB6ISVVm1wzm7kbarKKJI3msMhaM';
+const publicKey='BN5IGL4lmCjhRAmxmTAypwnurCX2qV1ulDK_SREe2EwNETaMogSOJuGIXXsqVoVtEJnXN-cvzGDtO9foP9Pfyhc';
 webpush.setVapidDetails('https://williandevvv.github.io/controlsoporteit/',publicKey,process.env.VAPID_PRIVATE_KEY);
 const now=DateTime.utc();
 const candidates=await db.collection('reminders').where('enabled','==',true).get();
