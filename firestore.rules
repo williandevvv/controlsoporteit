@@ -28,6 +28,7 @@ service cloud.firestore {
     match /inventory/{id} { allow read, write: if supervisor(); }
     match /pending/{id} { allow read, write: if supervisor(); }
     match /dailyReports/{id} { allow read, write: if supervisor(); }
+    match /schedules/{id} { allow read, write: if supervisor(); }
     match /settings/{id} { allow read: if signedIn(); allow write: if admin(); }
     match /catalogs/{id} { allow read: if signedIn(); allow write: if admin(); }
   }
