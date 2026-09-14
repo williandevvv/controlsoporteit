@@ -1,0 +1,7 @@
+{
+  "name": "ite-supervisor",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": { "start": "npx.cmd serve . -l 5173", "deploy": "firebase deploy" },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function role() { return profile().data.role; }
+    function admin() { return signedIn() && role() == 'ADMIN'; }
+    function supervisor() { return signedIn() && (role() == 'ADMIN' || role() == 'SUPERVISOR'); }
+    function ownEmployee() { return resource.data.employeeId == profile().data.employeeId; }
+    function safeFields() { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['entryTime','exitTime','recordType','explanation','observations','photo','updatedAt','updatedBy']); }
+
+    match /users/{uid} { allow read: if signedIn() && (uid == request.auth.uid || admin()); allow create, update, delete: if admin(); }
+    match /employees/{id} { allow read: if signedIn(); allow write: if supervisor(); }
+    match /timeRecords/{id} {
+      allow read: if supervisor() || (signedIn() && ownEmployee());
+      allow create: if supervisor() || (signedIn() && request.resource.data.employeeId == profile().data.employeeId);
+      allow update: if supervisor() || (signedIn() && ownEmployee() && safeFields());
+      allow delete: if admin();
+    }
+    match /activityLogs/{id} { allow read: if supervisor(); allow create: if signedIn(); allow update, delete: if false; }
+    match /settings/{id} { allow read: if signedIn(); allow write: if admin(); }
+    match /catalogs/{id} { allow read: if signedIn(); allow write: if admin(); }
+  }
+}
