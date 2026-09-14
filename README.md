@@ -15,7 +15,11 @@ Aplicación web responsive/PWA para control de marcajes, personas, fotos y expor
 
 ## Seguridad y permisos
 
-Las reglas incluidas protegen los datos también en Firebase: solo ADMIN cambia configuración/usuarios; SUPERVISOR administra personal y marcajes; COLABORADOR solo ve y registra sus propios marcajes cuando `users/{uid}.employeeId` apunta a su persona. Para creación de usuarios por el panel se recomienda una Cloud Function con Admin SDK; nunca se debe permitir al navegador asignar roles.
+Las reglas incluidas protegen los datos también en Firebase: solo ADMIN cambia configuración/usuarios; SUPERVISOR administra personal y marcajes; COLABORADOR solo ve y registra sus propios marcajes cuando `users/{uid}.employeeId` apunta a su persona.
+
+## Usuarios sin costo
+
+No se usan Cloud Functions. Cada persona pulsa **Crear cuenta de colaborador** desde el inicio de sesión, crea su cuenta con correo y contraseña y queda automáticamente como `COLABORADOR`. El ADMIN abre **Administración → Usuarios**, vincula la persona correspondiente y puede cambiar su rol o desactivar la cuenta. Para el primer ADMIN se conserva el paso 6 anterior, pues Firebase debe tener un administrador inicial.
 
 ## Cierres de planilla
 

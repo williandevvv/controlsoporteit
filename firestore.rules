@@ -9,7 +9,12 @@ service cloud.firestore {
     function ownEmployee() { return resource.data.employeeId == profile().data.employeeId; }
     function safeFields() { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['entryTime','exitTime','recordType','explanation','observations','photo','updatedAt','updatedBy']); }
 
-    match /users/{uid} { allow read: if signedIn() && (uid == request.auth.uid || admin()); allow create, update, delete: if admin(); }
+    match /users/{uid} {
+      allow read: if signedIn() && (uid == request.auth.uid || admin());
+      allow create: if signedIn() && uid == request.auth.uid && request.resource.data.role == 'COLABORADOR' && request.resource.data.active == true && request.resource.data.email == request.auth.token.email && !('employeeId' in request.resource.data);
+      allow update: if admin() || (signedIn() && uid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'updatedAt']));
+      allow delete: if admin();
+    }
     match /employees/{id} { allow read: if signedIn(); allow write: if supervisor(); }
     match /timeRecords/{id} {
       allow read: if supervisor() || (signedIn() && ownEmployee());
