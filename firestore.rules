@@ -23,6 +23,11 @@ service cloud.firestore {
       allow delete: if admin();
     }
     match /activityLogs/{id} { allow read: if supervisor(); allow create: if signedIn(); allow update, delete: if false; }
+    match /tasks/{id} { allow read, write: if supervisor(); }
+    match /incidents/{id} { allow read, write: if supervisor(); }
+    match /inventory/{id} { allow read, write: if supervisor(); }
+    match /pending/{id} { allow read, write: if supervisor(); }
+    match /dailyReports/{id} { allow read, write: if supervisor(); }
     match /settings/{id} { allow read: if signedIn(); allow write: if admin(); }
     match /catalogs/{id} { allow read: if signedIn(); allow write: if admin(); }
   }
