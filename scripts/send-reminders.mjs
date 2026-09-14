@@ -8,9 +8,10 @@ const db=admin.firestore();
 const publicKey='BD-JjPNa97-sK55_fLcUnRs4g36LBa9f414fxv2FCjmK2FDHHqlcavKC4BqFB6ISVVm1wzm7kbarKKJI3msMhaM';
 webpush.setVapidDetails('https://williandevvv.github.io/controlsoporteit/',publicKey,process.env.VAPID_PRIVATE_KEY);
 const now=DateTime.utc();
-const due=await db.collection('reminders').where('enabled','==',true).where('nextAt','<=',admin.firestore.Timestamp.fromDate(now.toJSDate())).get();
+const candidates=await db.collection('reminders').where('enabled','==',true).get();
+const due=candidates.docs.filter(s=>{const t=s.data().nextAt;return t&&t.toDate()<=now.toJSDate();});
 let sent=0,failed=0;
-for(const snap of due.docs){
+for(const snap of due){
  const r=snap.data();
  const subs=await db.collection('pushSubscriptions').where('uid','==',r.uid).get();
  const payload=JSON.stringify({notification:{title:'Control Soporte',body:r.title+(r.note?` — ${r.note}`:''),url:'https://williandevvv.github.io/controlsoporteit/'}});
@@ -21,4 +22,4 @@ for(const snap of due.docs){
   await snap.ref.update({nextAt:admin.firestore.Timestamp.fromDate(next.toJSDate()),date:next.toFormat('yyyy-MM-dd'),time:next.toFormat('HH:mm')});
  }else await snap.ref.update({enabled:false,sentAt:admin.firestore.Timestamp.now()});
 }
-console.log(`Recordatorios revisados: ${due.size}; enviadas: ${sent}; fallos: ${failed}`);
+console.log(`Recordatorios revisados: ${due.length}; enviadas: ${sent}; fallos: ${failed}`);
