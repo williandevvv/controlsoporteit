@@ -45,3 +45,5 @@ service cloud.firestore {
     }
   }
 }
+
+// Reminder rules are deployed through GitHub Actions.
