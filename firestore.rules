@@ -31,5 +31,17 @@ service cloud.firestore {
     match /schedules/{id} { allow read, write: if supervisor(); }
     match /settings/{id} { allow read: if signedIn(); allow write: if admin(); }
     match /catalogs/{id} { allow read: if signedIn(); allow write: if admin(); }
+    match /reminders/{id} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if signedIn() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    match /pushSubscriptions/{id} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if signedIn() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
   }
 }
