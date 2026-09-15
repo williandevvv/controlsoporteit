@@ -1,0 +1,1 @@
+(()=>{const run=()=>{['#supervision-fab','#cs-r-fab','.floating-actions','.dashboard-floats'].forEach(s=>document.querySelectorAll(s).forEach(e=>e.style.display='none'))};new MutationObserver(run).observe(document.body,{childList:true,subtree:true});run()})();
