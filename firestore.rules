@@ -39,5 +39,6 @@ service cloud.firestore {
     match /shiftClosures/{id} { allow read: if supervisor(); allow create: if supervisor(); allow update, delete: if admin(); }
     match /supervisionEvents/{id} { allow read, create, update, delete: if supervisor(); }
     match /meetingMinutes/{id} { allow read, create, update, delete: if supervisor(); }
+    match /executiveReports/{id} { allow read, create, update, delete: if supervisor(); }
   }
 }
