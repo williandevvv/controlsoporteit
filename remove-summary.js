@@ -1,0 +1,1 @@
+const remove=()=>document.getElementById('op-summary')?.remove();remove();new MutationObserver(remove).observe(document.body,{childList:true,subtree:true});
