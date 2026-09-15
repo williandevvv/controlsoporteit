@@ -1,0 +1,1 @@
+const s=document.createElement('style');s.textContent=`@media (min-width:740px){#cs-r-fab{right:18px!important;bottom:18px!important}#supervision-fab{right:190px!important;bottom:18px!important}}@media (max-width:739px){#cs-r-fab{right:12px!important;bottom:12px!important}#supervision-fab{right:12px!important;bottom:70px!important}}`;document.head.appendChild(s);
