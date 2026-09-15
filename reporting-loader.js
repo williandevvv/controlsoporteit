@@ -1,0 +1,2 @@
+import{getApps}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+let tries=0;const boot=()=>{if(getApps().length){import('./reporting-center.js').catch(console.error);return}if(++tries<100)setTimeout(boot,100)};boot();
