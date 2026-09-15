@@ -20,7 +20,7 @@ service cloud.firestore {
     }
     match /employees/{id} { allow read: if hasModule('personnel') || (signedIn() && profile().data.employeeId == id); allow write: if supervisor() || hasModule('personnel'); }
     match /timeRecords/{id} {
-      allow read: if admin();
+      allow read: if admin() || (signedIn() && resource.data.employeeId == profile().data.employeeId);
       allow create: if admin() || (signedIn() && hasModule('timeRecords') && request.resource.data.employeeId == profile().data.employeeId);
       allow update: if admin() || (signedIn() && hasModule('timeRecords') && resource.data.employeeId == profile().data.employeeId && request.resource.data.employeeId == profile().data.employeeId && safeFields());
       allow delete: if admin();
