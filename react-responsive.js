@@ -24,20 +24,32 @@ function App() {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
+    let lastSignature = '';
+    let timer = 0;
     const sync = () => {
       const next = readMenu();
-      setItems(next);
+      const signature = next.map((x) => `${x.id}|${x.label}|${x.icon}`).join('||');
+      if (signature !== lastSignature) {
+        lastSignature = signature;
+        setItems(next);
+      }
       if (!document.querySelector('.layout')) setOpen(false);
     };
+    const scheduleSync = () => {
+      if (timer) return;
+      timer = window.setTimeout(() => { timer = 0; sync(); }, 50);
+    };
     sync();
-    const observer = new MutationObserver(sync);
-    observer.observe(document.getElementById('app') || document.body, { childList: true, subtree: true });
-    window.addEventListener('cs:react-refresh', sync);
-    window.addEventListener('resize', sync);
+    const target = document.getElementById('app') || document.body;
+    const observer = new MutationObserver(scheduleSync);
+    observer.observe(target, { childList: true, subtree: true });
+    window.addEventListener('cs:react-refresh', scheduleSync);
+    window.addEventListener('resize', scheduleSync);
     return () => {
       observer.disconnect();
-      window.removeEventListener('cs:react-refresh', sync);
-      window.removeEventListener('resize', sync);
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('cs:react-refresh', scheduleSync);
+      window.removeEventListener('resize', scheduleSync);
     };
   }, []);
 
@@ -55,53 +67,19 @@ function App() {
   const main = visible.filter((x) => !special.includes(x.label));
   const tools = visible.filter((x) => special.includes(x.label));
   const hasLayout = !!document.querySelector('.layout');
-
   if (!hasLayout) return null;
 
-  const activate = (item) => {
-    item.source?.click();
-    setOpen(false);
-  };
-
-  const navButton = (item, tool = false) => h('button', {
-    key: item.id + item.label,
-    className: 'react-nav-item' + (tool ? ' react-nav-tool' : ''),
-    onClick: () => activate(item)
-  },
-    h('span', { className: 'react-nav-icon' }, item.icon),
-    h('span', null, item.label)
-  );
+  const activate = (item) => { item.source?.click(); setOpen(false); };
+  const navButton = (item, tool = false) => h('button', { key: item.id + item.label, className: 'react-nav-item' + (tool ? ' react-nav-tool' : ''), onClick: () => activate(item) }, h('span', { className: 'react-nav-icon' }, item.icon), h('span', null, item.label));
 
   return h(React.Fragment, null,
-    h('button', {
-      className: 'react-mobile-trigger',
-      'aria-label': 'Abrir menú',
-      onClick: () => setOpen(true)
-    }, h('span'), h('span'), h('span')),
+    h('button', { className: 'react-mobile-trigger', 'aria-label': 'Abrir menú', onClick: () => setOpen(true) }, h('span'), h('span'), h('span')),
     h('div', { className: 'react-menu-backdrop' + (open ? ' show' : ''), onClick: () => setOpen(false) }),
     h('aside', { className: 'react-sidebar' + (open ? ' open' : ''), 'aria-label': 'Navegación principal' },
-      h('div', { className: 'react-brand' },
-        h('div', { className: 'react-brand-mark' }, 'C'),
-        h('div', null, h('b', null, 'CONTROL'), h('small', null, 'Soporte')),
-        h('button', { className: 'react-close', onClick: () => setOpen(false), 'aria-label': 'Cerrar menú' }, '×')
-      ),
-      h('div', { className: 'react-user' },
-        h('div', { className: 'react-avatar' }, ((document.querySelector('.content header p')?.textContent || 'CS').trim().slice(0,1).toUpperCase())),
-        h('div', null,
-          h('strong', null, (document.querySelector('.content header p')?.textContent || 'Usuario').trim()),
-          h('small', null, 'Panel operativo')
-        )
-      ),
-      h('label', { className: 'react-nav-search' },
-        h('span', null, '⌕'),
-        h('input', { value: query, onChange: (e) => setQuery(e.target.value), placeholder: 'Buscar módulo…', 'aria-label': 'Buscar módulo' })
-      ),
-      h('div', { className: 'react-nav-scroll' },
-        h('div', { className: 'react-nav-title' }, 'PRINCIPAL'),
-        main.map((item) => navButton(item)),
-        tools.length ? h('div', { className: 'react-nav-title react-tools-title' }, 'GESTIÓN') : null,
-        tools.map((item) => navButton(item, true))
-      ),
+      h('div', { className: 'react-brand' }, h('div', { className: 'react-brand-mark' }, 'C'), h('div', null, h('b', null, 'CONTROL'), h('small', null, 'Soporte')), h('button', { className: 'react-close', onClick: () => setOpen(false), 'aria-label': 'Cerrar menú' }, '×')),
+      h('div', { className: 'react-user' }, h('div', { className: 'react-avatar' }, 'C'), h('div', null, h('strong', null, 'Control Soporte'), h('small', null, 'Panel operativo'))),
+      h('label', { className: 'react-nav-search' }, h('span', null, '⌕'), h('input', { value: query, onChange: (e) => setQuery(e.target.value), placeholder: 'Buscar módulo…', 'aria-label': 'Buscar módulo' })),
+      h('div', { className: 'react-nav-scroll' }, h('div', { className: 'react-nav-title' }, 'PRINCIPAL'), main.map((item) => navButton(item)), tools.length ? h('div', { className: 'react-nav-title react-tools-title' }, 'GESTIÓN') : null, tools.map((item) => navButton(item, true))),
       h('div', { className: 'react-sidebar-foot' }, h('span', null, '●'), ' Sistema operativo')
     )
   );
@@ -109,14 +87,9 @@ function App() {
 
 function mount() {
   let root = document.getElementById(ROOT_ID);
-  if (!root) {
-    root = document.createElement('div');
-    root.id = ROOT_ID;
-    document.body.appendChild(root);
-  }
+  if (!root) { root = document.createElement('div'); root.id = ROOT_ID; document.body.appendChild(root); }
   if (!root.__reactRoot) root.__reactRoot = createRoot(root);
   root.__reactRoot.render(h(App));
 }
-
 mount();
 window.addEventListener('load', mount, { once: true });
