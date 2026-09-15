@@ -7,24 +7,12 @@ service cloud.firestore {
     function admin() { return signedIn() && role() == 'ADMIN'; }
     function supervisor() { return signedIn() && (role() == 'ADMIN' || role() == 'SUPERVISOR'); }
     function hasModule(module) {
-      return admin()
-        || (signedIn() && profile().data.permissions != null && profile().data.permissions[module] == true)
-        || (signedIn() && role() == 'SUPERVISOR' && (!('permissions' in profile().data) || profile().data.permissions[module] != false));
+      return admin() || (signedIn() && profile().data.permissions != null && profile().data.permissions[module] == true) || (signedIn() && role() == 'SUPERVISOR' && (!('permissions' in profile().data) || profile().data.permissions[module] != false));
     }
     function safeFields() { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['entryTime','exitTime','recordType','explanation','observations','updatedAt','updatedBy']); }
-    match /users/{uid} {
-      allow read: if signedIn() && (uid == request.auth.uid || admin());
-      allow create: if signedIn() && uid == request.auth.uid && request.resource.data.role == 'COLABORADOR' && request.resource.data.active == true && request.resource.data.email == request.auth.token.email && !('employeeId' in request.resource.data);
-      allow update: if admin() || (signedIn() && uid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'updatedAt']));
-      allow delete: if admin();
-    }
+    match /users/{uid} { allow read: if signedIn() && (uid == request.auth.uid || admin()); allow create: if signedIn() && uid == request.auth.uid && request.resource.data.role == 'COLABORADOR' && request.resource.data.active == true && request.resource.data.email == request.auth.token.email && !('employeeId' in request.resource.data); allow update: if admin() || (signedIn() && uid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'updatedAt'])); allow delete: if admin(); }
     match /employees/{id} { allow read: if hasModule('personnel') || (signedIn() && profile().data.employeeId == id); allow write: if supervisor() || hasModule('personnel'); }
-    match /timeRecords/{id} {
-      allow read: if admin() || (signedIn() && resource.data.employeeId == profile().data.employeeId);
-      allow create: if admin() || (signedIn() && hasModule('timeRecords') && request.resource.data.employeeId == profile().data.employeeId);
-      allow update: if admin() || (signedIn() && hasModule('timeRecords') && resource.data.employeeId == profile().data.employeeId && request.resource.data.employeeId == profile().data.employeeId && safeFields());
-      allow delete: if admin();
-    }
+    match /timeRecords/{id} { allow read: if admin() || (signedIn() && resource.data.employeeId == profile().data.employeeId); allow create: if admin() || (signedIn() && hasModule('timeRecords') && request.resource.data.employeeId == profile().data.employeeId); allow update: if admin() || (signedIn() && hasModule('timeRecords') && resource.data.employeeId == profile().data.employeeId && request.resource.data.employeeId == profile().data.employeeId && safeFields()); allow delete: if admin(); }
     match /activityLogs/{id} { allow read: if supervisor(); allow create: if signedIn(); allow update, delete: if false; }
     match /tasks/{id} { allow read, write: if hasModule('tasks'); }
     match /incidents/{id} { allow read, write: if hasModule('incidents'); }
@@ -32,6 +20,7 @@ service cloud.firestore {
     match /pending/{id} { allow read, write: if hasModule('pending'); }
     match /dailyReports/{id} { allow read, write: if hasModule('reports'); }
     match /schedules/{id} { allow read, write: if hasModule('reports'); }
+    match /formatTemplates/{id} { allow read, write: if hasModule('formatos'); }
     match /settings/{id} { allow read: if signedIn(); allow write: if admin(); }
     match /catalogs/{id} { allow read: if signedIn(); allow write: if admin(); }
     match /reminders/{id} { allow read: if signedIn() && resource.data.uid == request.auth.uid; allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow update: if signedIn() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid; allow delete: if signedIn() && resource.data.uid == request.auth.uid; }
