@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'https://esm.sh/react@19.1.1
 import { createRoot } from 'https://esm.sh/react-dom@19.1.1/client';
 
 const ROOT_ID = 'react-shell-root';
+const h = React.createElement;
 
 function readMenu() {
   const aside = document.querySelector('.layout > aside');
@@ -50,8 +51,9 @@ function App() {
     return q ? items.filter((x) => x.label.toLowerCase().includes(q)) : items;
   }, [items, query]);
 
-  const main = visible.filter((x) => !['Administración', 'Supervisión', 'Recordatorios', 'Mi Spotify', 'Ajustes', 'Historial operativo', 'Reporte ejecutivo', 'Formatos', 'Centro de alertas', 'Productividad', 'Ficha de colaborador', 'Agenda', 'Minutas', 'Auditoría'].includes(x.label));
-  const tools = visible.filter((x) => !main.includes(x));
+  const special = ['Administración','Supervisión','Recordatorios','Mi Spotify','Ajustes','Historial operativo','Reporte ejecutivo','Formatos','Centro de alertas','Productividad','Ficha de colaborador','Agenda','Minutas','Auditoría'];
+  const main = visible.filter((x) => !special.includes(x.label));
+  const tools = visible.filter((x) => special.includes(x.label));
   const hasLayout = !!document.querySelector('.layout');
 
   if (!hasLayout) return null;
@@ -61,34 +63,47 @@ function App() {
     setOpen(false);
   };
 
-  return (
-    <>
-      <button className="react-mobile-trigger" aria-label="Abrir menú" onClick={() => setOpen(true)}>
-        <span></span><span></span><span></span>
-      </button>
-      <div className={`react-menu-backdrop ${open ? 'show' : ''}`} onClick={() => setOpen(false)} />
-      <aside className={`react-sidebar ${open ? 'open' : ''}`} aria-label="Navegación principal">
-        <div className="react-brand">
-          <div className="react-brand-mark">C</div>
-          <div><b>CONTROL</b><small>Soporte</small></div>
-          <button className="react-close" onClick={() => setOpen(false)} aria-label="Cerrar menú">×</button>
-        </div>
-        <div className="react-user">
-          <div className="react-avatar">{(document.querySelector('.content header p')?.textContent || 'CS').trim().slice(0,1).toUpperCase()}</div>
-          <div><strong>{(document.querySelector('.content header h1')?.textContent || 'Control Soporte')}</strong><small>Panel operativo</small></div>
-        </div>
-        <label className="react-nav-search">
-          <span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar módulo…" />
-        </label>
-        <div className="react-nav-scroll">
-          <div className="react-nav-title">PRINCIPAL</div>
-          {main.map((item) => <button key={item.id + item.label} className="react-nav-item" onClick={() => activate(item)}><span className="react-nav-icon">{item.icon}</span><span>{item.label}</span></button>)}
-          {tools.length > 0 && <div className="react-nav-title react-tools-title">GESTIÓN</div>}
-          {tools.map((item) => <button key={item.id + item.label} className="react-nav-item react-nav-tool" onClick={() => activate(item)}><span className="react-nav-icon">{item.icon}</span><span>{item.label}</span></button>)}
-        </div>
-        <div className="react-sidebar-foot"><span>●</span> Sistema operativo</div>
-      </aside>
-    </>
+  const navButton = (item, tool = false) => h('button', {
+    key: item.id + item.label,
+    className: 'react-nav-item' + (tool ? ' react-nav-tool' : ''),
+    onClick: () => activate(item)
+  },
+    h('span', { className: 'react-nav-icon' }, item.icon),
+    h('span', null, item.label)
+  );
+
+  return h(React.Fragment, null,
+    h('button', {
+      className: 'react-mobile-trigger',
+      'aria-label': 'Abrir menú',
+      onClick: () => setOpen(true)
+    }, h('span'), h('span'), h('span')),
+    h('div', { className: 'react-menu-backdrop' + (open ? ' show' : ''), onClick: () => setOpen(false) }),
+    h('aside', { className: 'react-sidebar' + (open ? ' open' : ''), 'aria-label': 'Navegación principal' },
+      h('div', { className: 'react-brand' },
+        h('div', { className: 'react-brand-mark' }, 'C'),
+        h('div', null, h('b', null, 'CONTROL'), h('small', null, 'Soporte')),
+        h('button', { className: 'react-close', onClick: () => setOpen(false), 'aria-label': 'Cerrar menú' }, '×')
+      ),
+      h('div', { className: 'react-user' },
+        h('div', { className: 'react-avatar' }, ((document.querySelector('.content header p')?.textContent || 'CS').trim().slice(0,1).toUpperCase())),
+        h('div', null,
+          h('strong', null, (document.querySelector('.content header p')?.textContent || 'Usuario').trim()),
+          h('small', null, 'Panel operativo')
+        )
+      ),
+      h('label', { className: 'react-nav-search' },
+        h('span', null, '⌕'),
+        h('input', { value: query, onChange: (e) => setQuery(e.target.value), placeholder: 'Buscar módulo…', 'aria-label': 'Buscar módulo' })
+      ),
+      h('div', { className: 'react-nav-scroll' },
+        h('div', { className: 'react-nav-title' }, 'PRINCIPAL'),
+        main.map((item) => navButton(item)),
+        tools.length ? h('div', { className: 'react-nav-title react-tools-title' }, 'GESTIÓN') : null,
+        tools.map((item) => navButton(item, true))
+      ),
+      h('div', { className: 'react-sidebar-foot' }, h('span', null, '●'), ' Sistema operativo')
+    )
   );
 }
 
@@ -100,7 +115,7 @@ function mount() {
     document.body.appendChild(root);
   }
   if (!root.__reactRoot) root.__reactRoot = createRoot(root);
-  root.__reactRoot.render(<App />);
+  root.__reactRoot.render(h(App));
 }
 
 mount();
