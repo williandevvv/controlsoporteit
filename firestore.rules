@@ -21,6 +21,8 @@ service cloud.firestore {
     match /dailyReports/{id} { allow read, write: if hasModule('reports'); }
     match /schedules/{id} { allow read, write: if hasModule('reports'); }
     match /formatTemplates/{id} { allow read, write: if hasModule('formatos'); }
+    match /projects/{id} { allow read, write: if hasModule('projects'); }
+    match /projects/{id}/advances/{advanceId} { allow read, write: if hasModule('projects'); }
     match /settings/{id} { allow read: if signedIn(); allow write: if admin(); }
     match /catalogs/{id} { allow read: if signedIn(); allow write: if admin(); }
     match /reminders/{id} { allow read: if signedIn() && resource.data.uid == request.auth.uid; allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow update: if signedIn() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid; allow delete: if signedIn() && resource.data.uid == request.auth.uid; }
