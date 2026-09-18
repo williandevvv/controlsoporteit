@@ -1,17 +1,17 @@
 import{initializeApp,getApps,getApp}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';import{getAuth,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';import{getFirestore,getDoc,doc}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';import{firebaseConfig}from'./config.js';
 const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 let profile=null;
-const core={dashboard:'dashboard',tasks:'tasks',incidents:'incidents',inventory:'inventory',personnel:'personnel',pending:'pending',timeRecords:'timeRecords',reports:'reports'};
-const special={'formatos':'formatos','jefatura':'executiveReport','supervision':'supervision','reminders':'reminders','spotify':'spotify','alerts':'alerts','productivity':'productivity','profile':'employeeProfile','agenda':'agenda','minutes':'minutes','audit':'audit','history':'history'};
+const map={dashboard:'dashboard',tasks:'tasks',incidents:'incidents',inventory:'inventory',personnel:'personnel',pending:'pending',timeRecords:'timeRecords',reports:'reports',formatos:'formatos',projects:'projects',jefatura:'executiveReport',supervision:'supervision',reminders:'reminders',spotify:'spotify',alerts:'alerts',productivity:'productivity',profile:'employeeProfile',agenda:'agenda',minutes:'minutes',audit:'audit',history:'history',assign:'assign'};
+const labels={'Agenda de supervisión':'agenda','Minutas de reunión':'minutes','Formatos':'formatos','Centro de alertas':'alerts','Productividad':'productivity','Ficha de colaborador':'employeeProfile','Auditoría':'audit','Historial operativo':'history','Supervisión':'supervision','Recordatorios':'reminders','Mi Spotify':'spotify','Proyectos':'projects','Reporte general':'executiveReport','Reporte ejecutivo':'executiveReport','Asignar trabajo':'assign','Marcajes':'timeRecords','Tareas':'tasks','Incidencias':'incidents','Inventario':'inventory','Personal':'personnel','Pendientes':'pending','Reportes':'reports'};
 const allowed=k=>profile?.role==='ADMIN'||profile?.permissions?.[k]===true;
 function apply(){
-  if(!profile)return;
-  document.querySelectorAll('[data-view]').forEach(e=>{const k=core[e.dataset.view];if(k)e.style.display=allowed(k)?'':'none'});
-  document.querySelectorAll('[data-side-tool]').forEach(e=>{const k=special[e.dataset.sideTool];if(k)e.style.display=allowed(k)?'':'none'});
-  for(const [sel,k] of Object.entries({'[data-formatos-nav]':'formatos','[data-jefatura-nav]':'executiveReport','#supervision-fab':'supervision','#cs-r-fab':'reminders','[data-history-nav]':'history'}))document.querySelectorAll(sel).forEach(e=>e.style.display=allowed(k)?'':'none');
-  document.querySelectorAll('[data-gestion-nav]').forEach(e=>{const k=special[e.dataset.gestionNav];if(k)e.style.display=allowed(k)?'':'none'});
-  document.querySelectorAll('[data-quick]').forEach(e=>{const k=core[e.dataset.quick]||special[e.dataset.quick];if(k)e.style.display=allowed(k)?'':'none'});
+ if(!profile)return;
+ document.querySelectorAll('[data-view]').forEach(e=>{const k=map[e.dataset.view];if(k)e.style.display=allowed(k)?'':'none'});
+ document.querySelectorAll('[data-side-tool]').forEach(e=>{const k=map[e.dataset.sideTool];if(k)e.style.display=allowed(k)?'':'none'});
+ for(const[sel,k]of Object.entries({'[data-formatos-nav]':'formatos','[data-jefatura-nav]':'executiveReport','#supervision-fab':'supervision','#cs-r-fab':'reminders','[data-history-nav]':'history','[data-assign-nav]':'assign','[data-react-preview]':'__admin_only__'}))document.querySelectorAll(sel).forEach(e=>e.style.display=(k==='__admin_only__'||allowed(k))&&profile.role==='ADMIN'?'':'none');
+ document.querySelectorAll('[data-gestion-nav]').forEach(e=>{const k=map[e.dataset.gestionNav];if(k)e.style.display=allowed(k)?'':'none'});
+ document.querySelectorAll('[data-quick]').forEach(e=>{const k=map[e.dataset.quick];if(k)e.style.display=allowed(k)?'':'none'});
+ document.querySelectorAll('aside .nav,aside button').forEach(e=>{if(e.id==='logout'||e.id==='logout2'||e.classList.contains('logout'))return;const txt=(e.querySelector('span')?.textContent||e.textContent||'').trim().replace(/^[^A-Za-zÁÉÍÓÚáéíóúÑñ]+/,'').trim();const k=labels[txt];if(k)e.style.display=allowed(k)?'':'none';else if(txt==='Vista React (prueba)')e.style.display=profile.role==='ADMIN'?'':'none'});
 }
-async function refresh(u){profile=null;window.__csProfile=null;if(!u)return;try{const s=await getDoc(doc(db,'users',u.uid));profile=s.data()||{};window.__csProfile=profile;apply()}catch{} }
-onAuthStateChanged(auth,refresh);
-new MutationObserver(()=>apply()).observe(document.body,{childList:true,subtree:true});
+async function refresh(u){profile=null;window.__csProfile=null;if(!u)return;try{const s=await getDoc(doc(db,'users',u.uid));profile=s.data()||{};window.__csProfile=profile;apply()}catch{}}
+onAuthStateChanged(auth,refresh);new MutationObserver(()=>apply()).observe(document.body,{childList:true,subtree:true});
